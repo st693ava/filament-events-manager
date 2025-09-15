@@ -1,0 +1,42 @@
+{
+    "name": "st693ava/filament-events-manager",
+    "description": "Sistema de gestão de eventos automatizados para Filament v4 com interface em Português",
+    "keywords": ["filament", "events", "automation", "laravel", "eloquent", "activity-log"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "st693ava",
+            "email": "pdro.saraiva@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "filament/filament": "^4.0",
+        "laravel/framework": "^12.0",
+        "spatie/laravel-activitylog": "^4.10"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0",
+        "orchestra/testbench": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "St693ava\\FilamentEventsManager\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "St693ava\\FilamentEventsManager\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "St693ava\\FilamentEventsManager\\EventsManagerServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
