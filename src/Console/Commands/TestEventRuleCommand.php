@@ -14,7 +14,7 @@ class TestEventRuleCommand extends Command
                             {rule? : Rule ID or name to test}
                             {--all : Test all active rules}
                             {--dry-run : Simulate execution without running real actions}
-                            {--verbose : Enable verbose logging}
+                            {--detailed : Enable detailed logging}
                             {--data= : JSON string with custom mock data}
                             {--scenario= : Predefined scenario (user_registration, order_created, product_updated)}
                             {--format=table : Output format (table, json, detail)}';
@@ -40,7 +40,7 @@ class TestEventRuleCommand extends Command
 
         } catch (\Exception $e) {
             $this->error("Erro inesperado: {$e->getMessage()}");
-            if ($this->option('verbose')) {
+            if ($this->option('detailed')) {
                 $this->error("Stack trace: {$e->getTraceAsString()}");
             }
             return self::FAILURE;
@@ -163,7 +163,7 @@ class TestEventRuleCommand extends Command
 
         // Configure test runner
         $testRunner->setDryRun($this->option('dry-run') !== false);
-        $testRunner->setVerboseLogging($this->option('verbose'));
+        $testRunner->setVerboseLogging($this->option('detailed'));
 
         // Generate mock data
         $mockData = $this->generateMockData($mockGenerator, $rule);
@@ -299,7 +299,7 @@ class TestEventRuleCommand extends Command
         }
 
         // Debug log
-        if ($this->option('verbose') && ! empty($result['debug_log'])) {
+        if ($this->option('detailed') && ! empty($result['debug_log'])) {
             $this->line('<comment>🐛 LOG DE DEBUG:</comment>');
             foreach ($result['debug_log'] as $entry) {
                 $level = match ($entry['level']) {

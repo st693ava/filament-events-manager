@@ -3,8 +3,6 @@
 namespace St693ava\FilamentEventsManager\Services;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use St693ava\FilamentEventsManager\Support\EventContext;
 
 class TemplateRenderer
@@ -13,7 +11,7 @@ class TemplateRenderer
 
     public function __construct()
     {
-        $this->fieldPathResolver = new FieldPathResolver();
+        $this->fieldPathResolver = new FieldPathResolver;
     }
 
     /**
@@ -25,13 +23,21 @@ class TemplateRenderer
             return '';
         }
 
-        // Encontrar todos os placeholders no formato {{path}}
-        $placeholders = $this->extractPlaceholders($template);
-
+        // Suportar ambos os formatos: {placeholder} e {{placeholder}}
         $rendered = $template;
-        foreach ($placeholders as $placeholder) {
+
+        // Processar placeholders de chaves duplas {{placeholder}}
+        $doublePlaceholders = $this->extractDoublePlaceholders($template);
+        foreach ($doublePlaceholders as $placeholder) {
             $value = $this->resolvePlaceholder($placeholder, $data, $context);
             $rendered = str_replace("{{{$placeholder}}}", $this->formatValue($value), $rendered);
+        }
+
+        // Processar placeholders de chaves simples {placeholder}
+        $singlePlaceholders = $this->extractSinglePlaceholders($rendered);
+        foreach ($singlePlaceholders as $placeholder) {
+            $value = $this->resolvePlaceholder($placeholder, $data, $context);
+            $rendered = str_replace("{{$placeholder}}", $this->formatValue($value), $rendered);
         }
 
         return $rendered;
@@ -58,11 +64,31 @@ class TemplateRenderer
     }
 
     /**
-     * Extrai todos os placeholders de um template
+     * Extrai todos os placeholders de um template (backwards compatibility)
      */
     private function extractPlaceholders(string $template): array
     {
+        return $this->extractDoublePlaceholders($template);
+    }
+
+    /**
+     * Extrai placeholders de chaves duplas {{placeholder}}
+     */
+    private function extractDoublePlaceholders(string $template): array
+    {
         preg_match_all('/\{\{([^}]+)\}\}/', $template, $matches);
+
+        return array_unique($matches[1]);
+    }
+
+    /**
+     * Extrai placeholders de chaves simples {placeholder}
+     */
+    private function extractSinglePlaceholders(string $template): array
+    {
+        // Evitar placeholders que já são duplos {{}}
+        preg_match_all('/(?<!\{)\{([^{}]+)\}(?!\})/', $template, $matches);
+
         return array_unique($matches[1]);
     }
 
@@ -73,23 +99,49 @@ class TemplateRenderer
     {
         $placeholder = trim($placeholder);
 
+        \Illuminate\Support\Facades\Log::info('TemplateRenderer: Resolving placeholder', [
+            'placeholder' => $placeholder,
+            'data_types' => array_map('get_class', array_filter($data, 'is_object')),
+            'data_count' => count($data),
+            'context_keys' => array_keys($context->all()),
+        ]);
+
         // Primeiro, tentar resolver no contexto
         if (str_contains($placeholder, '.')) {
             $contextValue = $this->fieldPathResolver->resolve($placeholder, $context->all());
             if ($contextValue !== null) {
+                \Illuminate\Support\Facades\Log::info('TemplateRenderer: Resolved from context (dotted)', [
+                    'placeholder' => $placeholder,
+                    'value' => $contextValue,
+                ]);
                 return $contextValue;
             }
         } else {
             $contextValue = $context->get($placeholder);
             if ($contextValue !== null) {
+                \Illuminate\Support\Facades\Log::info('TemplateRenderer: Resolved from context (simple)', [
+                    'placeholder' => $placeholder,
+                    'value' => $contextValue,
+                ]);
                 return $contextValue;
             }
         }
 
         // Depois, tentar resolver nos dados dos modelos
-        foreach ($data as $item) {
+        foreach ($data as $key => $item) {
+            \Illuminate\Support\Facades\Log::info('TemplateRenderer: Trying to resolve from data item', [
+                'placeholder' => $placeholder,
+                'item_type' => get_class($item),
+                'item_key' => $key,
+            ]);
+
             $value = $this->fieldPathResolver->resolve($placeholder, $item);
             if ($value !== null) {
+                \Illuminate\Support\Facades\Log::info('TemplateRenderer: Resolved from model data', [
+                    'placeholder' => $placeholder,
+                    'value' => $value,
+                    'item_type' => get_class($item),
+                ]);
                 return $value;
             }
         }
@@ -97,6 +149,10 @@ class TemplateRenderer
         // Tentar placeholders especiais
         $specialValue = $this->resolveSpecialPlaceholder($placeholder, $data, $context);
         if ($specialValue !== null) {
+            \Illuminate\Support\Facades\Log::info('TemplateRenderer: Resolved as special placeholder', [
+                'placeholder' => $placeholder,
+                'value' => $specialValue,
+            ]);
             return $specialValue;
         }
 
@@ -104,9 +160,17 @@ class TemplateRenderer
         if (! empty($data)) {
             $firstItem = reset($data);
             if (is_array($firstItem) && isset($firstItem[$placeholder])) {
+                \Illuminate\Support\Facades\Log::info('TemplateRenderer: Resolved from first array item', [
+                    'placeholder' => $placeholder,
+                    'value' => $firstItem[$placeholder],
+                ]);
                 return $firstItem[$placeholder];
             }
         }
+
+        \Illuminate\Support\Facades\Log::warning('TemplateRenderer: Placeholder not resolved', [
+            'placeholder' => $placeholder,
+        ]);
 
         return null;
     }
@@ -158,6 +222,7 @@ class TemplateRenderer
             if (method_exists($value, '__toString')) {
                 return (string) $value;
             }
+
             return json_encode($value, JSON_UNESCAPED_UNICODE);
         }
 
@@ -235,7 +300,7 @@ class TemplateRenderer
 
         // Verificar se há placeholders malformados
         if (preg_match_all('/\{[^{]*\{[^}]*\}[^}]*\}/', $template, $matches)) {
-            $errors[] = 'Placeholders aninhados não são suportados: ' . implode(', ', $matches[0]);
+            $errors[] = 'Placeholders aninhados não são suportados: '.implode(', ', $matches[0]);
         }
 
         // Verificar se há chaves desbalanceadas
@@ -243,7 +308,7 @@ class TemplateRenderer
         $closeBraces = substr_count($template, '}}');
 
         if ($openBraces !== $closeBraces) {
-            $errors[] = 'Chaves desbalanceadas: ' . $openBraces . ' aberturas, ' . $closeBraces . ' fechos';
+            $errors[] = 'Chaves desbalanceadas: '.$openBraces.' aberturas, '.$closeBraces.' fechos';
         }
 
         // Verificar placeholders vazios
@@ -257,7 +322,7 @@ class TemplateRenderer
     /**
      * Lista todos os placeholders disponíveis para um conjunto de dados
      */
-    public function getAvailablePlaceholders(array $data, string $modelClass = null): array
+    public function getAvailablePlaceholders(array $data, ?string $modelClass = null): array
     {
         $placeholders = [
             // Placeholders especiais do sistema

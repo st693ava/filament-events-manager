@@ -1,0 +1,26 @@
+{
+  "name": "filament-events-manager",
+  "version": "1.0.0",
+  "description": "🚀 **Sistema Avançado de Automação de Eventos para Filament v4**",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/st693ava/filament-events-manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/st693ava/filament-events-manager/issues"
+  },
+  "homepage": "https://github.com/st693ava/filament-events-manager#readme",
+  "dependencies": {
+    "playwright": "^1.55.0"
+  }
+}

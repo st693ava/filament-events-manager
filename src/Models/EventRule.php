@@ -19,8 +19,8 @@ class EventRule extends Model
         'trigger_config',
         'is_active',
         'priority',
-        'created_by',
-        'updated_by',
+        'created_by_user_id',
+        'updated_by_user_id',
     ];
 
     protected function casts(): array
@@ -43,25 +43,30 @@ class EventRule extends Model
         return $this->hasMany(EventRuleAction::class)->orderBy('sort_order');
     }
 
-    public function logs(): HasMany
+    public function eventLogs(): HasMany
     {
         return $this->hasMany(EventLog::class);
     }
 
-    public function createdBy(): BelongsTo
+    public function creator(): BelongsTo
     {
-        return $this->belongsTo(config('auth.providers.users.model'), 'created_by');
+        return $this->belongsTo(config('auth.providers.users.model'), 'created_by_user_id');
     }
 
-    public function updatedBy(): BelongsTo
+    public function updater(): BelongsTo
     {
-        return $this->belongsTo(config('auth.providers.users.model'), 'updated_by');
+        return $this->belongsTo(config('auth.providers.users.model'), 'updated_by_user_id');
     }
 
     // Scopes
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    public function scopeInactive(Builder $query): Builder
+    {
+        return $query->where('is_active', false);
     }
 
     public function scopeByTriggerType(Builder $query, string $type): Builder
@@ -87,6 +92,10 @@ class EventRule extends Model
 
     public function getTriggerEvents(): array
     {
+        if ($this->trigger_type !== 'eloquent') {
+            return [];
+        }
+
         return $this->trigger_config['events'] ?? [];
     }
 
@@ -98,5 +107,22 @@ class EventRule extends Model
     public function hasActions(): bool
     {
         return $this->actions()->exists();
+    }
+
+    public function matchesEvent(string $triggerType, ?string $modelClass = null, ?string $eventName = null): bool
+    {
+        if (!$this->is_active || $this->trigger_type !== $triggerType) {
+            return false;
+        }
+
+        if ($triggerType === 'eloquent') {
+            $configModel = $this->getTriggerModelClass();
+            $configEvents = $this->getTriggerEvents();
+
+            return $configModel === $modelClass && in_array($eventName, $configEvents);
+        }
+
+        // Add logic for other trigger types as needed
+        return false;
     }
 }

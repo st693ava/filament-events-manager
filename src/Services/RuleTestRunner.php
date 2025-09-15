@@ -145,7 +145,9 @@ class RuleTestRunner
 
         foreach ($conditions as $condition) {
             try {
-                $result = $this->conditionEvaluator->evaluateCondition($condition, $mockData, $context);
+                // Criar uma collection com apenas esta condição para testar individualmente
+                $singleCondition = collect([$condition]);
+                $result = $this->conditionEvaluator->evaluate($singleCondition, $mockData, $context);
 
                 $expression = "{$condition->field_path} {$condition->operator} " .
                     (is_array($condition->value) ? json_encode($condition->value) : $condition->value);

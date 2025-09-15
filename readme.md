@@ -28,6 +28,30 @@ O **Filament Events Manager** é um package que permite configurar dinamicamente
 
 ---
 
+## 📸 Screenshots da Interface
+
+### Dashboard Principal
+![Dashboard Overview](docs/screenshots/dashboard-overview.png)
+*Dashboard com estatísticas de regras e logs de eventos*
+
+### Gestão de Regras de Eventos
+![Event Rules List](docs/screenshots/event-rules-list.png)
+*Lista completa de regras configuradas com status e prioridades*
+
+### Criação de Novas Regras
+![Event Rule Creation](docs/screenshots/event-rule-create-form.png)
+*Formulário intuitivo para criação de regras complexas*
+
+### Edição Detalhada de Regras
+![Event Rule Detailed Edit](docs/screenshots/event-rule-edit-detailed.png)
+*Interface avançada para configuração de condições e ações*
+
+### Logs de Execução
+![Event Logs List](docs/screenshots/event-logs-list.png)
+*Histórico completo de execuções com detalhes de performance*
+
+---
+
 ## ✨ Funcionalidades Principais
 
 ### 🎛️ Sistema de Regras Avançado

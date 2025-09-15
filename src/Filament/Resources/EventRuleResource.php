@@ -22,7 +22,6 @@ class EventRuleResource extends Resource
 
     protected static bool $hasTitleCaseModelLabel = false;
 
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBolt;
 
     protected static ?string $navigationLabel = 'Regras de Eventos';
@@ -75,10 +74,10 @@ class EventRuleResource extends Resource
                             ->default('eloquent')
                             ->required()
                             ->live()
-                            ->afterStateUpdated(fn($set) => $set('trigger_config', [])),
+                            ->afterStateUpdated(fn ($set) => $set('trigger_config', [])),
 
                         Group::make()
-                            ->schema(fn($get): array => match ($get('trigger_type')) {
+                            ->schema(fn ($get): array => match ($get('trigger_type')) {
                                 'eloquent' => static::getEloquentTriggerFields(),
                                 'custom' => static::getCustomTriggerFields(),
                                 default => [],
@@ -135,7 +134,7 @@ class EventRuleResource extends Resource
                                             ->columnSpan(1),
 
                                         Group::make()
-                                            ->schema(fn($get): array => match ($get('operator')) {
+                                            ->schema(fn ($get): array => match ($get('operator')) {
                                                 'in', 'not_in' => [
                                                     Forms\Components\TagsInput::make('value')
                                                         ->label('Lista de Valores')
@@ -166,6 +165,7 @@ class EventRuleResource extends Resource
                                                 'OR' => 'OU',
                                             ])
                                             ->default('AND')
+                                            ->required()
                                             ->helperText('Como esta condição se relaciona com a próxima'),
 
                                         Forms\Components\TextInput::make('priority')
@@ -199,10 +199,10 @@ class EventRuleResource extends Resource
                                     ])
                                     ->required()
                                     ->live()
-                                    ->afterStateUpdated(fn($set) => $set('action_config', [])),
+                                    ->afterStateUpdated(fn ($set) => $set('action_config', [])),
 
                                 Group::make()
-                                    ->schema(fn($get): array => match ($get('action_type')) {
+                                    ->schema(fn ($get): array => match ($get('action_type')) {
                                         'email' => static::getEmailActionFields(),
                                         'activity_log' => static::getActivityLogActionFields(),
                                         'webhook' => static::getWebhookActionFields(),
@@ -234,14 +234,14 @@ class EventRuleResource extends Resource
                 Tables\Columns\TextColumn::make('trigger_type')
                     ->label('Tipo')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'eloquent' => 'success',
                         'query' => 'warning',
                         'custom' => 'info',
                         'schedule' => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
                         'eloquent' => 'Eloquent',
                         'query' => 'Consulta BD',
                         'custom' => 'Personalizado',
@@ -481,10 +481,10 @@ class EventRuleResource extends Resource
                 ])
                 ->required()
                 ->live()
-                ->afterStateUpdated(fn($set) => $set('action_config.user_ids', null)),
+                ->afterStateUpdated(fn ($set) => $set('action_config.user_ids', null)),
 
             Group::make()
-                ->schema(fn($get): array => match ($get('action_config.recipient_type')) {
+                ->schema(fn ($get): array => match ($get('action_config.recipient_type')) {
                     'users' => [
                         Forms\Components\TagsInput::make('action_config.user_ids')
                             ->label('IDs dos Utilizadores')

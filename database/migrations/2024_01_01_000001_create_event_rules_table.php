@@ -12,14 +12,14 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->enum('trigger_type', ['eloquent', 'query', 'custom', 'schedule'])->default('eloquent');
+            $table->enum('trigger_type', ['eloquent', 'sql_query', 'custom', 'schedule'])->default('eloquent');
             $table->json('trigger_config'); // Model class, events, table, etc.
             $table->boolean('is_active')->default(true);
             $table->integer('priority')->default(0); // Ordem de execução
 
             // Auditoria
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->unsignedBigInteger('created_by_user_id')->nullable();
+            $table->unsignedBigInteger('updated_by_user_id')->nullable();
 
             $table->timestamps();
 
@@ -28,8 +28,8 @@ return new class extends Migration
             $table->index('trigger_type');
 
             // Foreign keys para utilizadores (se existir tabela users)
-            $table->foreign('created_by')->references('id')->on('users')->nullOnDelete();
-            $table->foreign('updated_by')->references('id')->on('users')->nullOnDelete();
+            $table->foreign('created_by_user_id')->references('id')->on('users')->nullOnDelete();
+            $table->foreign('updated_by_user_id')->references('id')->on('users')->nullOnDelete();
         });
     }
 

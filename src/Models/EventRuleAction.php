@@ -16,7 +16,6 @@ class EventRuleAction extends Model
         'action_type',
         'action_config',
         'sort_order',
-        'is_active',
     ];
 
     protected function casts(): array
@@ -24,7 +23,6 @@ class EventRuleAction extends Model
         return [
             'action_config' => 'array',
             'sort_order' => 'integer',
-            'is_active' => 'boolean',
         ];
     }
 
@@ -35,9 +33,9 @@ class EventRuleAction extends Model
     }
 
     // Scopes
-    public function scopeActive(Builder $query): Builder
+    public function scopeForRule(Builder $query, int $ruleId): Builder
     {
-        return $query->where('is_active', true);
+        return $query->where('event_rule_id', $ruleId);
     }
 
     public function scopeOrdered(Builder $query): Builder
@@ -51,10 +49,6 @@ class EventRuleAction extends Model
     }
 
     // Helper methods
-    public function isActive(): bool
-    {
-        return $this->is_active;
-    }
 
     public function getConfigValue(string $key, mixed $default = null): mixed
     {
@@ -89,5 +83,40 @@ class EventRuleAction extends Model
     public function requiresTemplate(): bool
     {
         return in_array($this->action_type, ['email', 'notification']);
+    }
+
+    public function getEmailRecipient(): ?string
+    {
+        if (!$this->isEmailAction()) {
+            return null;
+        }
+
+        return $this->getConfigValue('to');
+    }
+
+    public function getWebhookUrl(): ?string
+    {
+        if (!$this->isWebhookAction()) {
+            return null;
+        }
+
+        return $this->getConfigValue('url');
+    }
+
+    public function hasValidConfiguration(): bool
+    {
+        if ($this->isEmailAction()) {
+            return $this->hasConfig('to') && $this->hasConfig('subject') && $this->hasConfig('body');
+        }
+
+        if ($this->isWebhookAction()) {
+            return $this->hasConfig('url');
+        }
+
+        if ($this->isNotificationAction()) {
+            return $this->hasConfig('title') && $this->hasConfig('body');
+        }
+
+        return true;
     }
 }

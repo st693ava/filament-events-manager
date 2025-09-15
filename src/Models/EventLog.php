@@ -12,7 +12,7 @@ class EventLog extends Model
 {
     use HasFactory;
 
-    // Não usa timestamps padrão pois temos triggered_at
+    // Não usa timestamps padrão pois usa triggered_at customizado
     public $timestamps = false;
 
     protected $fillable = [
@@ -59,6 +59,16 @@ class EventLog extends Model
     }
 
     // Scopes
+    public function scopeForRule(Builder $query, int $ruleId): Builder
+    {
+        return $query->where('event_rule_id', $ruleId);
+    }
+
+    public function scopeByTriggerType(Builder $query, string $triggerType): Builder
+    {
+        return $query->where('trigger_type', $triggerType);
+    }
+
     public function scopeRecent(Builder $query, int $days = 7): Builder
     {
         return $query->where('triggered_at', '>=', now()->subDays($days));
@@ -75,7 +85,7 @@ class EventLog extends Model
         return $query;
     }
 
-    public function scopeByUser(Builder $query, int $userId): Builder
+    public function scopeForUser(Builder $query, int $userId): Builder
     {
         return $query->where('user_id', $userId);
     }
@@ -143,5 +153,35 @@ class EventLog extends Model
     public function hasModel(): bool
     {
         return !empty($this->model_type) && !empty($this->model_id);
+    }
+
+    public function isEloquentTrigger(): bool
+    {
+        return $this->trigger_type === 'eloquent';
+    }
+
+    public function hasActions(): bool
+    {
+        return !empty($this->actions_executed);
+    }
+
+    public function isFastExecution(int $thresholdMs = 1000): bool
+    {
+        return $this->execution_time_ms < $thresholdMs;
+    }
+
+    public function getSuccessfulActionsCount(): int
+    {
+        return count($this->getSuccessfulActions());
+    }
+
+    public function getFailedActionsCount(): int
+    {
+        return count($this->getFailedActions());
+    }
+
+    public function getTriggeredAtForHumans(): string
+    {
+        return $this->triggered_at->diffForHumans();
     }
 }

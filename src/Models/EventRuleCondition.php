@@ -20,9 +20,12 @@ class EventRuleCondition extends Model
         'logical_operator',
         'group_id',
         'sort_order',
-        'group_start',
-        'group_end',
-        'priority',
+    ];
+
+    protected $attributes = [
+        'logical_operator' => 'AND',
+        'priority' => 0,
+        'sort_order' => 0,
     ];
 
     protected function casts(): array
@@ -41,6 +44,11 @@ class EventRuleCondition extends Model
     }
 
     // Scopes
+    public function scopeForRule(Builder $query, int $ruleId): Builder
+    {
+        return $query->where('event_rule_id', $ruleId);
+    }
+
     public function scopeByGroup(Builder $query, ?string $groupId): Builder
     {
         return $query->where('group_id', $groupId);
@@ -64,14 +72,39 @@ class EventRuleCondition extends Model
 
     public function getDecodedValue(): mixed
     {
-        if ($this->value_type === 'static') {
-            // Tentar decodificar como JSON, se falhar usar como string
-            $decoded = json_decode($this->value, true);
-
-            return json_last_error() === JSON_ERROR_NONE ? $decoded : $this->value;
+        if (empty($this->value)) {
+            return null;
         }
 
-        return $this->value;
+        // Tentar decodificar como JSON, se falhar usar como string
+        $decoded = json_decode($this->value, true);
+
+        return json_last_error() === JSON_ERROR_NONE ? $decoded : $this->value;
+    }
+
+    public function getParsedValue(): mixed
+    {
+        return $this->getDecodedValue();
+    }
+
+    public function isDynamic(): bool
+    {
+        return in_array($this->value_type, ['dynamic', 'model_field']);
+    }
+
+    public function requiresValue(): bool
+    {
+        return !in_array($this->operator, ['changed', 'was']);
+    }
+
+    public function isValidOperatorValueCombination(): bool
+    {
+        if ($this->isArrayOperator()) {
+            $value = $this->getParsedValue();
+            return is_array($value);
+        }
+
+        return true;
     }
 
     public function requiresModelData(): bool

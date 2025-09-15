@@ -22,6 +22,22 @@ O **Filament Events Manager** é como ter um assistente digital que vigia a sua 
 
 ---
 
+## 📸 Veja Como É Fácil!
+
+### Interface Principal
+![Dashboard](docs/screenshots/dashboard-overview.png)
+
+### Lista de Automações Criadas
+![Lista de Regras](docs/screenshots/event-rules-list.png)
+
+### Criar Nova Automação
+![Criar Regra](docs/screenshots/event-rule-create-form.png)
+
+### Ver Histórico de Execuções
+![Logs](docs/screenshots/event-logs-list.png)
+
+---
+
 ## 🎨 Como Funciona?
 
 ### 1. Escolhe um "Gatilho" (O Que Vai Disparar a Automação)

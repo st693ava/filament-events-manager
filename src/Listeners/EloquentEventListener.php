@@ -12,26 +12,37 @@ class EloquentEventListener
 
     public function register(): void
     {
-        // Registar listeners para todos os eventos Eloquent principais
-        $events = [
-            'eloquent.retrieved',
-            'eloquent.creating',
-            'eloquent.created',
-            'eloquent.updating',
-            'eloquent.updated',
-            'eloquent.saving',
-            'eloquent.saved',
-            'eloquent.deleting',
-            'eloquent.deleted',
-            'eloquent.restoring',
-            'eloquent.restored',
-            'eloquent.replicating',
+        \Illuminate\Support\Facades\Log::info('EloquentEventListener: Starting registration for specific Eloquent events');
+
+        // Registar apenas os eventos Eloquent específicos (não usar wildcard geral)
+        $eloquentEvents = [
+            'eloquent.retrieved*',
+            'eloquent.creating*',
+            'eloquent.created*',
+            'eloquent.updating*',
+            'eloquent.updated*',
+            'eloquent.saving*',
+            'eloquent.saved*',
+            'eloquent.deleting*',
+            'eloquent.deleted*',
+            'eloquent.restoring*',
+            'eloquent.restored*',
+            'eloquent.replicating*',
         ];
 
-        foreach ($events as $event) {
-            Event::listen($event, function (string $eventName, array $data) {
+        foreach ($eloquentEvents as $eventPattern) {
+            Event::listen($eventPattern, function (string $eventName, array $data) {
+                \Illuminate\Support\Facades\Log::info('EloquentEventListener: Eloquent event captured', [
+                    'event' => $eventName,
+                    'model_class' => isset($data[0]) ? get_class($data[0]) : null,
+                    'model_id' => $data[0]->id ?? null,
+                ]);
                 $this->globalEventInterceptor->handle($eventName, $data);
             });
         }
+
+        \Illuminate\Support\Facades\Log::info('EloquentEventListener: Specific Eloquent event listeners registered', [
+            'events_count' => count($eloquentEvents),
+        ]);
     }
 }
