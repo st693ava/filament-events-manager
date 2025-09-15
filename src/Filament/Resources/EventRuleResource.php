@@ -80,6 +80,7 @@ class EventRuleResource extends Resource
                         Group::make()
                             ->schema(fn($get): array => match ($get('trigger_type')) {
                                 'eloquent' => static::getEloquentTriggerFields(),
+                                'custom' => static::getCustomTriggerFields(),
                                 default => [],
                             }),
                     ]),
@@ -505,6 +506,23 @@ class EventRuleResource extends Resource
                     ],
                     default => [],
                 }),
+        ];
+    }
+
+    protected static function getCustomTriggerFields(): array
+    {
+        return [
+            Forms\Components\TextInput::make('trigger_config.event_class')
+                ->label('Classe do Evento Laravel')
+                ->placeholder('App\\Events\\UserRegistered')
+                ->helperText('Nome completo da classe do evento. Exemplos: Illuminate\\Auth\\Events\\Login, App\\Events\\OrderCreated, Custom\\Events\\PaymentProcessed')
+                ->required(),
+
+            Forms\Components\Textarea::make('trigger_config.properties')
+                ->label('Propriedades a Extrair (opcional)')
+                ->placeholder('user, order, amount')
+                ->helperText('Lista de propriedades separadas por vírgula que serão extraídas do evento. Se vazio, extrai todas as propriedades públicas.')
+                ->rows(2),
         ];
     }
 

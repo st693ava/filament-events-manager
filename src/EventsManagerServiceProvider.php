@@ -12,6 +12,7 @@ use St693ava\FilamentEventsManager\Console\Commands\TestEventRuleCommand;
 use St693ava\FilamentEventsManager\Console\Commands\ProcessScheduledRulesCommand;
 use St693ava\FilamentEventsManager\Console\Commands\ExportRulesCommand;
 use St693ava\FilamentEventsManager\Console\Commands\ImportRulesCommand;
+use St693ava\FilamentEventsManager\Console\Commands\InstallDefaultRulesCommand;
 use St693ava\FilamentEventsManager\Listeners\EloquentEventListener;
 use St693ava\FilamentEventsManager\Listeners\QueryEventListener;
 use St693ava\FilamentEventsManager\Services\ConditionEvaluator;
@@ -101,6 +102,7 @@ class EventsManagerServiceProvider extends ServiceProvider
                 ProcessScheduledRulesCommand::class,
                 ExportRulesCommand::class,
                 ImportRulesCommand::class,
+                InstallDefaultRulesCommand::class,
             ]);
         }
     }

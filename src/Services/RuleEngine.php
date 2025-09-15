@@ -41,7 +41,7 @@ class RuleEngine
         }
     }
 
-    private function processRule(EventRule $rule, array $data, EventContext $context, float $startTime): void
+    public function processRule(EventRule $rule, array $data, EventContext $context, float $startTime = null): void
     {
         $ruleStartTime = microtime(true);
 

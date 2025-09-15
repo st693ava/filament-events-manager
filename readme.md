@@ -102,7 +102,18 @@ public function panel(Panel $panel): Panel
 }
 ```
 
-### Passo 4: Configurar (Opcional)
+### Passo 4: Instalar Eventos Standard (Recomendado)
+```bash
+php artisan events-manager:install-defaults
+```
+
+Este comando instala regras pré-configuradas para casos de uso comuns:
+- 🔐 **Autenticação**: Login/logout, registos, reset passwords
+- 🛡️ **Segurança**: Alertas de tentativas falhadas, atividade suspeita
+- 📊 **Auditoria**: Logs de compliance e exportações
+- ⚠️ **Alertas**: Monitorização de erros críticos
+
+### Passo 5: Configurar (Opcional)
 ```bash
 php artisan vendor:publish --tag="filament-events-manager-config"
 ```
@@ -110,6 +121,30 @@ php artisan vendor:publish --tag="filament-events-manager-config"
 ---
 
 ## 📖 Guia de Uso
+
+### ⚡ Início Rápido com Eventos Standard
+
+O package inclui regras pré-configuradas para acelerar a implementação:
+
+```bash
+# Ver regras disponíveis
+php artisan events-manager:install-defaults --dry-run
+
+# Instalar todas as regras
+php artisan events-manager:install-defaults
+
+# Instalar apenas categorias específicas
+php artisan events-manager:install-defaults --only=auth,security
+```
+
+**Regras incluídas:**
+- Login/logout automático com spatie/activity-log
+- Alertas de segurança para tentativas falhadas
+- Emails de boas-vindas para novos utilizadores
+- Auditoria de reset de passwords
+- Monitorização de erros críticos
+
+> 📚 **Documentação detalhada:** Ver [DEFAULT-RULES-EXAMPLES.md](DEFAULT-RULES-EXAMPLES.md) para exemplos completos de uso e personalização.
 
 ### Exemplo 1: Email de Boas-vindas
 ```php

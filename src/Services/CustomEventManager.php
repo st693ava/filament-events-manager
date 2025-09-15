@@ -109,7 +109,7 @@ class CustomEventManager
             $context = $this->createCustomEventContext($event, $rule);
 
             // Process the rule
-            $this->ruleEngine->processRule($rule, $data, $context);
+            $this->ruleEngine->processRule($rule, $data, $context, microtime(true));
 
         } catch (\Exception $e) {
             Log::error('Custom event processing failed', [
@@ -131,8 +131,12 @@ class CustomEventManager
 
         try {
             // If specific properties are configured, extract only those
-            if (isset($config['properties']) && is_array($config['properties'])) {
-                foreach ($config['properties'] as $property) {
+            if (isset($config['properties']) && !empty($config['properties'])) {
+                $properties = is_array($config['properties'])
+                    ? $config['properties']
+                    : array_map('trim', explode(',', $config['properties']));
+
+                foreach ($properties as $property) {
                     if (property_exists($event, $property)) {
                         $data[$property] = $event->{$property};
                     }
