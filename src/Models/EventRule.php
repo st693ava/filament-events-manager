@@ -32,6 +32,19 @@ class EventRule extends Model
         ];
     }
 
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::deleting(function (EventRule $eventRule) {
+            // Manually delete related records to ensure cascade deletion works
+            // even if migration hasn't been run yet
+            $eventRule->eventLogs()->delete();
+            $eventRule->conditions()->delete();
+            $eventRule->actions()->delete();
+        });
+    }
+
     // Relationships
     public function conditions(): HasMany
     {

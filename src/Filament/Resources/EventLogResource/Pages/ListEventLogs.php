@@ -3,6 +3,7 @@
 namespace St693ava\FilamentEventsManager\Filament\Resources\EventLogResource\Pages;
 
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Icons\Heroicon;
 use St693ava\FilamentEventsManager\Filament\Resources\EventLogResource;
@@ -28,7 +29,10 @@ class ListEventLogs extends ListRecords
                 ->action(function () {
                     $deletedCount = static::getModel()::where('triggered_at', '<', now()->subDays(30))->delete();
 
-                    $this->notify('success', "Eliminados {$deletedCount} logs antigos com sucesso.");
+                    Notification::make()
+                        ->title("Eliminados {$deletedCount} logs antigos com sucesso.")
+                        ->success()
+                        ->send();
                 }),
         ];
     }
